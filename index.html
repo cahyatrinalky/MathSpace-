@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathSpace | Interactive Learning</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@700&family=Instrument+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --sunset-gold: #ff9d6c;
+            --sunset-orange: #ff5f6d;
+            --sunset-purple: #240b36;
+            --glass-white: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.15);
+        }
+
+        * { box-sizing: border-box; font-family: 'Instrument Sans', sans-serif; }
+
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #240b36 0%, #000000 100%);
+            background-attachment: fixed;
+            color: #f8fafc;
+            min-height: 100vh;
+            padding-top: 90px;
+        }
+
+        .navbar {
+            background: rgba(36, 11, 54, 0.7);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 0;
+        }
+
+        .brand {
+            font-family: 'Crimson Pro', serif;
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, var(--sunset-gold), var(--sunset-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .section {
+            background: var(--glass-white);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .section h2, .section h3 {
+            font-family: 'Crimson Pro', serif;
+            color: var(--sunset-gold);
+        }
+
+        .geo-box {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid var(--glass-border);
+            transition: 0.3s ease;
+        }
+        .geo-box:hover { background: rgba(255, 255, 255, 0.07); transform: translateY(-5px); }
+
+        .number-line-wrapper {
+            overflow-x: auto;
+            padding: 40px 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--sunset-orange) transparent;
+        }
+
+        .number-line-container {
+            position: relative;
+            padding: 80px 20px;
+            min-width: 1100px;
+            margin: 20px auto;
+        }
+
+        .base-line {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tick { width: 2px; height: 12px; background: rgba(255, 255, 255, 0.3); position: relative; top: -5px; }
+        .tick::after {
+            content: attr(data-value); position: absolute; top: 25px; left: 50%;
+            transform: translateX(-50%); font-size: 11px; color: rgba(255, 255, 255, 0.5);
+        }
+
+        .tick.major { height: 20px; top: -9px; background: var(--sunset-gold); }
+        .tick.major::after { color: var(--sunset-gold); font-weight: bold; }
+
+        .tick.zero { background: var(--sunset-orange); height: 30px; top: -14px; width: 4px; box-shadow: 0 0 15px var(--sunset-orange); }
+        .tick.zero::after { color: var(--sunset-orange); font-size: 16px; top: 35px; font-weight: 800; }
+
+        .tick.active::after { color: #fff; font-weight: 800; transform: translateX(-50%) scale(1.4); text-shadow: 0 0 10px var(--sunset-gold); }
+
+        .rocket {
+            position: absolute;
+            top: -65px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3.5rem;
+            transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+            filter: drop-shadow(0 0 20px var(--sunset-orange));
+            z-index: 10;
+        }
+
+        input.math-input {
+            background: transparent !important;
+            border: 2px solid var(--sunset-gold) !important;
+            color: var(--sunset-gold) !important;
+            font-size: 2.5rem !important;
+            font-weight: 800;
+            text-align: center;
+            border-radius: 25px;
+            padding: 20px;
+            text-shadow: 0 0 10px rgba(255, 157, 108, 0.3);
+            transition: 0.4s;
+        }
+        input.math-input:focus {
+            box-shadow: 0 0 30px rgba(255, 157, 108, 0.2) !important;
+            outline: none;
+            border-color: #fff !important;
+        }
+
+        .explanation-card {
+            background: rgba(255, 95, 109, 0.1);
+            border: 1px solid rgba(255, 95, 109, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .opt-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            border-radius: 18px;
+            padding: 18px;
+            font-weight: 600;
+            margin: 10px 0;
+            transition: 0.3s ease;
+            text-align: center;
+        }
+        .opt-btn:hover {
+            background: var(--sunset-orange);
+            border-color: #fff;
+            transform: scale(1.03);
+        }
+
+        .badge-math {
+            background: linear-gradient(45deg, var(--sunset-orange), var(--sunset-purple));
+            color: white;
+            padding: 12px 25px;
+            border-radius: 15px;
+            font-weight: 800;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .btn-next-custom {
+            background: var(--sunset-gold);
+            border: none;
+            color: var(--sunset-purple);
+            font-weight: 800;
+            border-radius: 50px;
+            padding: 15px;
+            transition: 0.3s;
+        }
+        .btn-next-custom:hover { background: #fff; transform: translateY(-3px); }
+
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar fixed-top">
+    <div class="container text-center">
+        <a class="brand" href="#"><i class="fa-solid fa-rocket me-2"></i> MATHSPACE</a>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <div class="section">
+        <h2 class="fw-bold mb-4"><i class="fa-solid fa-book-open text-warning me-3"></i>Mengenal Bilangan Bulat</h2>
+        <p class="lead text-secondary">
+            Bilangan bulat adalah sistem bilangan yang terdiri dari <b>bilangan bulat positif</b> (1, 2, 3, ...), 
+            angka <b>nol</b> (0) sebagai titik netral, dan <b>bilangan bulat negatif</b> (-1, -2, -3, ...). 
+            Berbeda dengan bilangan asli, bilangan bulat mencakup arah yang berlawanan, memungkinkan kita untuk 
+            merepresentasikan konsep seperti kedalaman di bawah permukaan laut, suhu di bawah nol, hingga posisi di sebelah kiri titik acuan.
+        </p>
+        
+        <div class="row g-4 mt-2">
+            <div class="col-md-6">
+                <div class="geo-box" style="border-top: 3px solid var(--sunset-gold);">
+                    <h5 class="fw-bold" style="color: var(--sunset-gold);"><i class="fa-solid fa-plus-circle me-2"></i>Penjumlahan (+)</h5>
+                    <p class="small m-0 text-secondary">
+                        Secara konsep, penjumlahan berarti kita bergerak ke arah <b>KANAN</b> pada garis bilangan. 
+                        Setiap langkah ke kanan menunjukkan peningkatan nilai atau penambahan kuantitas, menjauhi angka negatif dan menuju arah positif yang lebih besar.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="geo-box" style="border-top: 3px solid var(--sunset-orange);">
+                    <h5 class="fw-bold" style="color: var(--sunset-orange);"><i class="fa-solid fa-minus-circle me-2"></i>Pengurangan (-)</h5>
+                    <p class="small m-0 text-secondary">
+                        Pengurangan identik dengan pergerakan ke arah <b>KIRI</b>. Nilai angka akan semakin mengecil seiring kita melangkah ke kiri. 
+                        Jika kita terus melangkah melewati nol, kita akan memasuki area bilangan negatif yang melambangkan kekurangan atau arah yang berlawanan.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3 class="fw-bold mb-4 text-center">SIMULATOR JEJAK LANGKAH</h3>
+        <div class="row justify-content-center">
+            <div class="col-lg-12 text-center">
+                <div class="mb-4">
+                    <input type="text" id="mathInput" class="form-control math-input" placeholder="-15 + 20" oninput="solveMath()" autocomplete="off">
+                    
+                    <div id="explanation" class="explanation-card text-start">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="fw-bold mb-1" id="resTitle" style="color: var(--sunset-gold);">HASIL: 0</h4>
+                            <i class="fa-solid fa-wand-magic-sparkles text-warning fs-4"></i>
+                        </div>
+                        <p class="m-0 text-white mt-2" id="stepText"></p>
+                    </div>
+                </div>
+
+                <div class="number-line-wrapper">
+                    <div class="number-line-container">
+                        <div id="rocket" class="rocket">🚶‍♂️</div>
+                        <div class="base-line" id="lineTicks"></div>
+                    </div>
+                </div>
+                <p id="hintText" class="mt-4 text-secondary small" style="letter-spacing: 1px;">Rentang Visual: [-30] ke [+30]</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h3 class="fw-bold m-0">UJI PEMAHAMAN</h3>
+            <span class="badge-math">POIN: <span id="lScore">0</span></span>
+        </div>
+
+        <div class="geo-box" id="quizBox">
+            <p id="qText" class="fs-4 fw-bold mb-4 text-white text-center"></p>
+            <div id="qOptions" class="row"></div>
+            <div id="qFeedback" class="mt-4 fw-bold text-center h5"></div>
+            <button id="nextBtn" class="btn btn-next-custom w-100 mt-4" onclick="nextQuestion()" style="display:none;">
+                Lanjutkan Perjalanan <i class="fa-solid fa-arrow-right ms-2"></i>
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const lineTicks = document.getElementById('lineTicks');
+    const minRange = -30;
+    const maxRange = 30;
+    const totalUnits = maxRange - minRange;
+
+    for (let i = minRange; i <= maxRange; i++) {
+        const tick = document.createElement('div');
+        let tickClass = 'tick';
+        if (i === 0) tickClass += ' zero';
+        else if (i % 5 === 0) tickClass += ' major';
+        tick.className = tickClass;
+        tick.setAttribute('data-value', i);
+        tick.id = `tick-${i}`;
+        lineTicks.appendChild(tick);
+    }
+
+    function solveMath() {
+        const input = document.getElementById('mathInput').value.trim();
+        const rocket = document.getElementById('rocket');
+        const explanation = document.getElementById('explanation');
+        const resTitle = document.getElementById('resTitle');
+        const stepText = document.getElementById('stepText');
+
+        document.querySelectorAll('.tick').forEach(t => t.classList.remove('active'));
+
+        const pattern = /^([-+]?\d+)\s*([\+\-])\s*(\(?[-+]?\d+\)?)$/;
+        const match = input.match(pattern);
+
+        if (match) {
+            let n1 = parseInt(match[1]);
+            let op = match[2];
+            let n2 = parseInt(match[3].replace(/[()]/g, ''));
+            let result = (op === '+') ? n1 + n2 : n1 - n2;
+
+            if (result >= minRange && result <= maxRange && n1 >= minRange && n1 <= maxRange) {
+                let percent = ((result - minRange) / totalUnits) * 100;
+                rocket.style.left = `${percent}%`;
+                rocket.style.opacity = '1';
+                
+                const activeTick = document.getElementById(`tick-${result}`);
+                if(activeTick) activeTick.classList.add('active');
+
+                explanation.style.display = 'block';
+                resTitle.innerText = `HASIL: ${result}`;
+                let arah = (op === '+' ? (n2 >= 0 ? "KANAN (Maju)" : "KIRI (Mundur)") : (n2 >= 0 ? "KIRI (Mundur)" : "KANAN (Maju)"));
+                stepText.innerHTML = `Berdiri di titik <b>${n1}</b>, lalu melangkah ke <b>${arah}</b> sebanyak <b>${Math.abs(n2)}</b> satuan.`;
+            } else {
+                rocket.style.opacity = '0.2';
+                explanation.style.display = 'block';
+                resTitle.innerText = "DILUAR JANGKAUAN";
+                stepText.innerText = "Langkah terlalu jauh! Harap gunakan angka dalam rentang -30 sampai 30.";
+            }
+        } else {
+            explanation.style.display = 'none';
+            if (input === "") rocket.style.left = "50%";
+        }
+    }
+
+    const questions = [
+        {q: "Suhu awal 5°C, lalu turun 8°C. Berapa suhu sekarang?", o: ["-3°C", "3°C", "13°C"], a: "-3°C"},
+        {q: "Hasil dari -2 + (-4) adalah...", o: ["-2", "-6", "6"], a: "-6"},
+        {q: "Kapal selam di -15m naik 5m. Posisi sekarang di...", o: ["-20m", "-10m", "10m"], a: "-10m"},
+        {q: "Berapa hasil dari 7 - (-3)?", o: ["4", "10", "-10"], a: "10"},
+        {q: "Dari titik 0 bergerak ke kiri 5 langkah, lalu kanan 2 langkah. Berhenti di...", o: ["-7", "-3", "3"], a: "-3"}
+    ];
+
+    let qIndex = 0; let score = 0;
+
+    function showQuestion() {
+        let d = questions[qIndex];
+        document.getElementById("qText").innerHTML = `<i class="fa-solid fa-scroll me-2" style="color:var(--sunset-gold)"></i> ${d.q}`;
+        let html = "";
+        d.o.forEach(opt => {
+            html += `<div class="col-md-4"><button class="btn opt-btn w-100" onclick="checkAnswer('${opt}', this)">${opt}</button></div>`;
+        });
+        document.getElementById("qOptions").innerHTML = html;
+        document.getElementById("qFeedback").innerHTML = "";
+        document.getElementById("nextBtn").style.display = "none";
+    }
+
+    function checkAnswer(ans, btn) {
+        const buttons = document.querySelectorAll('.opt-btn');
+        buttons.forEach(b => b.disabled = true);
+
+        if (ans === questions[qIndex].a) {
+            score += 20;
+            btn.style.background = "#28a745";
+            document.getElementById("qFeedback").innerHTML = "<span style='color: #28a745'>Benar! Pemahaman yang hebat.</span>";
+        } else {
+            btn.style.background = "#dc3545";
+            document.getElementById("qFeedback").innerHTML = `<span style='color: #dc3545'>Kurang tepat. Jawaban yang benar: ${questions[qIndex].a}</span>`;
+        }
+        document.getElementById("lScore").innerText = score;
+        document.getElementById("nextBtn").style.display = "block";
+    }
+
+    function nextQuestion() {
+        qIndex++;
+        if (qIndex < questions.length) showQuestion();
+        else {
+            document.getElementById("quizBox").innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fa-solid fa-medal text-warning mb-3" style="font-size: 5rem;"></i>
+                    <h2 class="fw-bold text-white mb-2">PERJALANAN SELESAI</h2>
+                    <h3 class="fw-bold mb-4" style="color: var(--sunset-gold);">TOTAL POIN: ${score} / 100</h3>
+                    <button class="btn btn-next-custom px-5 py-3" onclick="location.reload()">Mulai Baru</button>
+                </div>`;
+        }
+    }
+
+    window.onload = showQuestion;
+</script>
+
+</body>
+</html>
